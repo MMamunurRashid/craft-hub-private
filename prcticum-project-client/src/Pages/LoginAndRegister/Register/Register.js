@@ -5,6 +5,7 @@ import signUpBenner from "../../../assets/signUp.jpg";
 import { AuthContext } from "../../../Contexts/AuthProvider";
 import toast from "react-hot-toast";
 import useToken from "../../../hooks/useToken";
+import { safeFetch } from "../../../utils/api";
 
 const Register = () => {
   const { createUser, updateUser } = useContext(AuthContext);
@@ -16,6 +17,7 @@ const Register = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from?.pathname || "/";
+
   if (token) {
     navigate(from, { replace: true });
   }
@@ -79,9 +81,16 @@ const Register = () => {
                 };
                 updateUser(userInfo)
                   .then(() => {
-                    saveUserInDb(userDetails);
-                    setCreatedUserEmail(email);
-                    toast.success("Your Registration Successful!!");
+                    // Save user in DB first, then set createdUserEmail so useToken can fetch the JWT
+                    saveUserInDb(userDetails)
+                      .then(() => {
+                        setCreatedUserEmail(email);
+                        toast.success("Your Registration Successful!!");
+                      })
+                      .catch((err) => {
+                        console.error('Failed to save user in DB', err);
+                        toast.error('Registration succeeded but saving user failed. Please try logging in.');
+                      });
                   })
                   .catch((err) => console.error(err));
               })
@@ -96,16 +105,37 @@ const Register = () => {
   };
   // save user to DB
   const saveUserInDb = (userDetails) => {
-    fetch(`http://localhost:5000/users`, {
+    // return the fetch promise so caller can await it
+    return fetch(`http://localhost:5000/users`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
       },
       body: JSON.stringify(userDetails),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to save user');
+        return res.json();
+      })
       .then((data) => {
         toast.success("User information saved in database");
+        // After saving user, request JWT and save it to localStorage immediately
+        safeFetch(`http://localhost:5000/jwt?email=${userDetails.email}`)
+          .then((jwtRes) => {
+            if (jwtRes && jwtRes.accessToken) {
+              localStorage.setItem("accessToken", jwtRes.accessToken);
+              // Navigate after token is set
+              navigate(from, { replace: true });
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to fetch jwt after saving user', err);
+          });
+        return data;
+      })
+      .catch((err) => {
+        console.error('saveUserInDb error', err);
+        throw err;
       });
   };
 

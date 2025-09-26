@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import Layout from "./Layout";
 import { useQuery } from "@tanstack/react-query";
 import useSearchValue from "../../../hooks/useSearchValue";
+import { safeFetch } from "../../../utils/api";
 
 const Products = () => {
   const { searchInput } = useSearchContext();
@@ -33,22 +34,26 @@ const Products = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:5000/categories`);
-      const data = await res.json();
-      // console.log(data);
-      return data;
+      return await safeFetch(`http://localhost:5000/categories`);
     },
   });
 
   useEffect(() => {
-    setIsLoading(true); // Set loading state to true
-    fetch(`http://localhost:5000/products-page?limit=${displayLimit}`)
-      .then((res) => res.json())
-      .then((data) => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`http://localhost:5000/products-page?limit=${displayLimit}`);
+        if (!res.ok) throw new Error('Failed to fetch products');
+        const data = await res.json();
         console.log(data);
         setProducts(data);
-        setIsLoading(false); // Set loading state to false when data is loaded
-      });
+      } catch (err) {
+        console.error('Error loading products', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
   }, [displayLimit]);
 
   const handleCategoryProduct = (id) => {

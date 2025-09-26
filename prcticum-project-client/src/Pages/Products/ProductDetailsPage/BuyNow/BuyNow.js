@@ -92,15 +92,18 @@ const BuyNow = ({ orderProduct }) => {
         },
         body: JSON.stringify(orderDetails),
       })
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Order failed');
+          return res.json();
+        })
         .then((data) => {
-          //console.log(data);
           if (data.acknowledged) {
             toast.success("Your Order is confirmed!! Your products is on its way.");
-            document.getElementById("buy-now-modal").close();
+            const modal = document.getElementById("buy-now-modal");
+            if (modal && modal.close) modal.close();
 
             // Get the cart from localStorage
-            let cart = JSON.parse(localStorage.getItem("cart"));
+            let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
             const orderedProductIds = Array.isArray(orderProduct)
               ? orderProduct.map((product) => product._id)
@@ -114,8 +117,12 @@ const BuyNow = ({ orderProduct }) => {
 
             navigate("/dashboard/my-order");
           } else {
-            toast.error(data.message);
+            toast.error(data.message || 'Failed to place order');
           }
+        })
+        .catch((err) => {
+          console.error('Cash On Delivery error', err);
+          toast.error('Failed to place order. Please try again.');
         });
       console.log("Cash On Delivery clicked");
       // You can handle the action specific to this button here
@@ -127,14 +134,17 @@ const BuyNow = ({ orderProduct }) => {
         },
         body: JSON.stringify(orderDetails),
       })
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Payment request failed');
+          return res.json();
+        })
         .then((data) => {
           console.log(data);
 
           if (data) {
-            toast.success("Your Order is confirmed!! Your products is on its way.");
+            toast.success("Proceeding to payment gateway...");
             // Get the cart from localStorage
-            let cart = JSON.parse(localStorage.getItem("cart"));
+            let cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
             const orderedProductIds = Array.isArray(orderProduct)
               ? orderProduct.map((product) => product._id)
@@ -146,9 +156,15 @@ const BuyNow = ({ orderProduct }) => {
 
             localStorage.setItem("cart", JSON.stringify(cart));
           } else {
-            toast.error(data);
+            toast.error('Payment initialization failed');
           }
-          window.location.replace(data);
+          // if API returned a URL
+          if (typeof data === 'string') window.location.replace(data);
+          else if (Array.isArray(data) && data[0]) window.location.replace(data[0]);
+        })
+        .catch((err) => {
+          console.error('Payment error', err);
+          toast.error('Payment failed. Please try again.');
         });
       console.log("Submit With Payment clicked");
     }

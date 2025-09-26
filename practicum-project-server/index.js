@@ -28,6 +28,16 @@ const client = new MongoClient(uri, {
   },
 });
 
+// helper to validate ObjectId strings before using
+function isValidObjectId(id) {
+  if (!id) return false;
+  try {
+    return ObjectId.isValid(id) && String(new ObjectId(id)) === String(id);
+  } catch (err) {
+    return false;
+  }
+}
+
 // verify jwt
 function verifyJWT(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -47,6 +57,9 @@ function verifyJWT(req, res, next) {
 
 async function run() {
   try {
+    // Ensure DB connection is established before registering routes
+    await client.connect();
+    console.log('MongoDB connected');
     // collections
     const usersCollection = client.db("CreativeHub").collection("users");
     const categoriesCollection = client
@@ -190,12 +203,19 @@ async function run() {
       const id = req.params.id;
       const deliveryStatus = req.body.deliveryStatus;
 
-      // console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { deliveryStatus: deliveryStatus } };
-  
-      const result = await ordersCollection.updateOne(query, updateData);
-      res.send(result);
+
+      try {
+        const result = await ordersCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error updating delivery status', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // cash recived by delivery man
@@ -203,12 +223,19 @@ async function run() {
       const id = req.params.id;
       const paymentStatus = req.body.paymentStatus;
 
-      // console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { paymentStatus: paymentStatus } };
-  
-      const result = await ordersCollection.updateOne(query, updateData);
-      res.send(result);
+
+      try {
+        const result = await ordersCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error updating payment status', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // delivery notes by delivery man
@@ -216,12 +243,19 @@ async function run() {
       const id = req.params.id;
       const deliveryNotes = req.body.deliveryNotes;
 
-      // console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { deliveryNotes: deliveryNotes } };
-  
-      const result = await ordersCollection.updateOne(query, updateData);
-      res.send(result);
+
+      try {
+        const result = await ordersCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error updating delivery notes', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // product return by customer
@@ -229,12 +263,19 @@ async function run() {
       const id = req.params.id;
       const returnNotes = req.body.returnNotes;
 
-      // console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { returnNotes: returnNotes } };
-  
-      const result = await ordersCollection.updateOne(query, updateData);
-      res.send(result);
+
+      try {
+        const result = await ordersCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error updating return notes', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
 
@@ -250,6 +291,9 @@ async function run() {
     app.patch("/users/:id", async (req, res) => {
       const userId = req.params.id;
       // const updatedUserData = req.body;
+      if (!isValidObjectId(userId)) {
+        return res.status(400).send({ error: 'Invalid user id' });
+      }
       const query = { _id: new ObjectId(userId) };
       const updateData = { $set: { address: req.body.address } };
 
@@ -334,19 +378,35 @@ async function run() {
     // product by id
     app.get("/product/:id", async (req, res) => {
       const id = req.params.id;
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid product id' });
+      }
       const query = { _id: new ObjectId(id) };
-      const result = await productsCollection.findOne(query);
-      res.send(result);
+      try {
+        const result = await productsCollection.findOne(query);
+        if (!result) return res.status(404).send({ error: 'Product not found' });
+        res.send(result);
+      } catch (err) {
+        console.error('Error fetching product by id', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // update product by id
     app.patch("/updateProduct/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid product id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { invisible: req.body.invisible } };
-      const result = await productsCollection.updateOne(query, updateData);
-      res.send(result);
+      try {
+        const result = await productsCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error updating product invisible flag', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // update product by id
@@ -354,6 +414,10 @@ async function run() {
       const id = req.params.id;
       const quantityToAdd = parseInt(req.body.quantity, 10) || 0;
       console.log(id, quantityToAdd);
+
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid product id' });
+      }
 
       const query = { _id: new ObjectId(id) };
 
@@ -579,9 +643,18 @@ async function run() {
     // product by id
     app.get("/order/:id", async (req, res) => {
       const id = req.params.id;
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
-      const result = await ordersCollection.findOne(query);
-      res.send(result);
+      try {
+        const result = await ordersCollection.findOne(query);
+        if (!result) return res.status(404).send({ error: 'Order not found' });
+        res.send(result);
+      } catch (err) {
+        console.error('Error fetching order by id', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
     // online payment order
     // Orders with payment
@@ -620,18 +693,23 @@ async function run() {
       };
 
       const sslcz = new SSLCommerzPayment(store_id, store_passwd, is_live);
-      sslcz.init(data).then((apiResponse) => {
-        // Redirect the user to payment gateway
-        let GatewayPageURL = apiResponse.GatewayPageURL;
-        ordersCollection.insertOne({
-          ...order,
-          transactionId,
-          paymentdata: data,
-          paymentStatus: false,
+      sslcz
+        .init(data)
+        .then((apiResponse) => {
+          // Redirect the user to payment gateway
+          let GatewayPageURL = apiResponse.GatewayPageURL;
+          ordersCollection.insertOne({
+            ...order,
+            transactionId,
+            paymentdata: data,
+            paymentStatus: false,
+          });
+          res.send([(url = GatewayPageURL)]);
+        })
+        .catch((err) => {
+          console.error('SSLCommerz init error', err);
+          res.status(500).send({ error: 'Payment gateway error' });
         });
-        res.send([(url = GatewayPageURL)]);
-        // console.log(" : ", apiResponse);
-      });
 
       // const result = await orderCollection.insertOne(query);
       // res.send(result);
@@ -671,22 +749,37 @@ async function run() {
       const deliveryManEmail = req.body.deliveryManEmail;
       const deliveryStatus = req.body.deliveryStatus;
 
-      // console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { deliveryStatus: deliveryStatus, deliveryManEmail } };
-  
-      const result = await ordersCollection.updateOne(query, updateData);
-      res.send(result);
+
+      try {
+        const result = await ordersCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error assigning delivery man', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // for update payment by seller
     app.patch("/order-payment/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id);
+      if (!isValidObjectId(id)) {
+        return res.status(400).send({ error: 'Invalid order id' });
+      }
       const query = { _id: new ObjectId(id) };
       const updateData = { $set: { paymentStatus: req.body.paymentStatus } };
-      const result = await ordersCollection.updateOne(query, updateData);
-      res.send(result);
+      try {
+        const result = await ordersCollection.updateOne(query, updateData);
+        res.send(result);
+      } catch (err) {
+        console.error('Error updating order payment', err);
+        res.status(500).send({ error: 'Internal Server Error' });
+      }
     });
 
     // my order
@@ -799,9 +892,12 @@ async function run() {
 
         const reviewDetails = await Promise.all(
           userReviews.map(async (review) => {
-            const productInfo = await productsCollection.findOne({
-              _id: new ObjectId(review.productId),
-            });
+            let productInfo = null;
+            if (isValidObjectId(review.productId)) {
+              productInfo = await productsCollection.findOne({
+                _id: new ObjectId(review.productId),
+              });
+            }
             return { review, productInfo };
           })
         );
@@ -821,4 +917,21 @@ app.get("/", async (req, res) => {
 });
 app.listen(port, () => {
   console.log(`Craft Hub running on port: ${port}`);
+});
+
+// global error handler (fallback)
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).send({ error: 'Internal Server Error' });
+});
+
+// graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, closing MongoDB client');
+  try {
+    await client.close();
+  } catch (e) {
+    console.error('Error closing MongoDB client', e);
+  }
+  process.exit(0);
 });

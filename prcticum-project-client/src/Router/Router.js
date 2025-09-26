@@ -60,18 +60,20 @@ const router = createBrowserRouter([
       {
         path: "/category/:id",
         element: <ShopByCategory/>,
-        loader: ({ params }) =>
-          fetch(
-            `http://localhost:5000/category/${params.id}`
-          ),
+        loader: async ({ params }) => {
+          const res = await fetch(`http://localhost:5000/category/${params.id}`);
+          if (!res.ok) throw new Error('Failed to load category');
+          return res;
+        },
       },
       {
         path: "/product-details/:id",
         element: <ProductDetails/>,
-        loader: ({ params }) =>
-          fetch(
-            `http://localhost:5000/product/${params.id}`
-          ),
+        loader: async ({ params }) => {
+          const res = await fetch(`http://localhost:5000/product/${params.id}`);
+          if (!res.ok) throw new Error('Failed to load product');
+          return res;
+        },
       },
 
     ],
