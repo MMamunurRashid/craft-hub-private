@@ -532,10 +532,12 @@ async function run() {
       const fromDate = req.query.fromDate;
       const toDate = req.query.toDate;
 
-      // Validate fromDate and toDate here if needed...
-
+      // Parse dates properly and set time ranges
       const startOfDate = new Date(fromDate);
+      startOfDate.setHours(0, 0, 0, 0); // Start of day
+      
       const endOfDate = new Date(toDate);
+      endOfDate.setHours(23, 59, 59, 999); // End of day
 
       const orders = await ordersCollection
         .find({
@@ -549,8 +551,22 @@ async function run() {
         .toArray();
 
       const filteredOrders = orders.filter((order) => {
-        const orderDate = new Date(order.orderDate);
-        return orderDate >= startOfDate && orderDate <= endOfDate;
+        // Parse order date - handle different formats
+        let orderDate;
+        if (typeof order.orderDate === 'string') {
+          orderDate = new Date(order.orderDate);
+        } else {
+          orderDate = new Date(order.orderDate);
+        }
+
+        // Extract just the date part for comparison (ignore time)
+        const orderDateOnly = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate());
+        const startDateOnly = new Date(startOfDate.getFullYear(), startOfDate.getMonth(), startOfDate.getDate());
+        const endDateOnly = new Date(endOfDate.getFullYear(), endOfDate.getMonth(), endOfDate.getDate());
+
+        const isInRange = orderDateOnly >= startDateOnly && orderDateOnly <= endDateOnly;
+        
+        return isInRange;
       });
 
       const sellerOrders = filteredOrders.map((order) => {
@@ -829,7 +845,6 @@ async function run() {
     // });
 
     // sales report for admin
-    // sales report for admin
     app.get("/sales-report-admin", verifyJWT, verifyAdmin, async (req, res) => {
       const sellerEmail = req.query.email;
       const decodedEmail = req.decoded.email;
@@ -841,10 +856,12 @@ async function run() {
       const fromDate = req.query.fromDate;
       const toDate = req.query.toDate;
 
-      // Validate fromDate and toDate here if needed...
-
+      // Parse dates properly and set time ranges
       const startOfDate = new Date(fromDate);
+      startOfDate.setHours(0, 0, 0, 0); // Start of day
+      
       const endOfDate = new Date(toDate);
+      endOfDate.setHours(23, 59, 59, 999); // End of day
 
       const orders = await ordersCollection
         .find({
@@ -854,12 +871,28 @@ async function run() {
         .toArray();
 
       const filteredOrders = orders.filter((order) => {
-        const orderDate = new Date(order.orderDate);
-        return orderDate >= startOfDate && orderDate <= endOfDate;
+        // Parse order date - handle different formats
+        let orderDate;
+        if (typeof order.orderDate === 'string') {
+          orderDate = new Date(order.orderDate);
+        } else {
+          orderDate = new Date(order.orderDate);
+        }
+
+        // Extract just the date part for comparison (ignore time)
+        const orderDateOnly = new Date(orderDate.getFullYear(), orderDate.getMonth(), orderDate.getDate());
+        const startDateOnly = new Date(startOfDate.getFullYear(), startOfDate.getMonth(), startOfDate.getDate());
+        const endDateOnly = new Date(endOfDate.getFullYear(), endOfDate.getMonth(), endOfDate.getDate());
+
+        const isInRange = orderDateOnly >= startDateOnly && orderDateOnly <= endDateOnly;
+        
+        return isInRange;
       });
 
       res.send(filteredOrders);
     });
+
+
 
     // review
     app.post("/review", async (req, res) => {
