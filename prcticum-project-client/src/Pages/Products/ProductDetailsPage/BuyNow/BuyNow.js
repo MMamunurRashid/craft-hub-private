@@ -2,11 +2,12 @@ import React, { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AuthContext } from "../../../../Contexts/AuthProvider";
 import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const BuyNow = ({ orderProduct }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     register,
     handleSubmit,
@@ -85,7 +86,7 @@ const BuyNow = ({ orderProduct }) => {
     };
 
     if (event.nativeEvent.submitter.value === "Cash On Delivery") {
-      fetch("http://localhost:5000/orders", {
+      fetch(`${process.env.REACT_APP_API_URL}/orders`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -127,7 +128,7 @@ const BuyNow = ({ orderProduct }) => {
       console.log("Cash On Delivery clicked");
       // You can handle the action specific to this button here
     } else if (event.nativeEvent.submitter.value === "Submit With Payment") {
-      fetch("http://localhost:5000/orders-payment", {
+      fetch(`${process.env.REACT_APP_API_URL}/orders-payment`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -363,7 +364,12 @@ const BuyNow = ({ orderProduct }) => {
         </form>
       </div>: <div className="text-center">
         <h1 className="text-xl text-center mb-5">You Need to Login First</h1>
-        <Link to='/login' className=" bg-orange-500 px-5 py-2 rounded-[4px] hover:bg-white  border-2 hover:border-orange-500  hover:text-black text-white text-lg m-5 hover:duration-500">Please Login</Link>
+        <button 
+          onClick={() => navigate('/login', { state: { from: location } })}
+          className=" bg-orange-500 px-5 py-2 rounded-[4px] hover:bg-white  border-2 hover:border-orange-500  hover:text-black text-white text-lg m-5 hover:duration-500"
+        >
+          Please Login
+        </button>
       </div> 
        }
       </div>

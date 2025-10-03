@@ -1,11 +1,10 @@
-import React, { useContext, useRef, useState } from "react";
+import React, { useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import "../../Font/Font.css";
 import { AuthContext } from "../../Contexts/AuthProvider";
 import { useCart } from "../../Contexts/CartContext";
 import { useSearchContext } from "../../Contexts/SearchContext";
-import useSearchValue from "../../hooks/useSearchValue";
 
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
@@ -24,16 +23,13 @@ const Navbar = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     const search = e.target.search.value;
-    // handleSearchInputChange(search)
 
     console.log(search);
     setSearchInput(search);
-    //  if(searchRef){
-    //   setSearchInput(searchRef.current.value);
-    //   console.log(searchRef.current.value);
-    //   // return console.log('eroor in search');
-    //  }
     navigate("/products");
+    
+    // Clear the form input after search
+    e.target.reset();
   };
   // const handleSearch = (e) => {
   //   e.preventDefault();

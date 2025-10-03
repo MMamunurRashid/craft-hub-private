@@ -84,7 +84,7 @@ const MyCart = () => {
 
   useEffect(() => {
     if (productId) {
-      fetch(`http://localhost:5000/product/${productId}`)
+      fetch(`${process.env.REACT_APP_API_URL}/product/${productId}`)
         .then((res) => res.json())
         .then((data) => {
           setProduct(data);

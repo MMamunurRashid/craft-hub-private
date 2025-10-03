@@ -13,7 +13,7 @@ const AllAdmin = () => {
       } = useQuery({
         queryKey: ["admin"],
         queryFn: async () => {
-          const res = await fetch("http://localhost:5000/admin", {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/admin`, {
             headers: {
               authorization: `bearer ${localStorage.getItem("accessToken")}`,
             },

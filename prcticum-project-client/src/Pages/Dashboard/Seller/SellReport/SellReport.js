@@ -49,7 +49,7 @@ const SellReport = () => {
     queryKey: ["sales", user?.email, date1, date2],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5000/sales-report?email=${user?.email}&fromDate=${date1}&toDate=${date2}`,
+        `${process.env.REACT_APP_API_URL}/sales-report?email=${user?.email}&fromDate=${date1}&toDate=${date2}`,
         {
           headers: {
             authorization: `bearer ${localStorage.getItem("accessToken")}`,

@@ -693,10 +693,10 @@ async function run() {
         total_amount: order.totalPrice,
         currency: "BDT",
         tran_id: transactionId, // use unique tran_id for each api call
-        success_url: `http://localhost:5000/payment/success?transactionId=${transactionId}`,
-        fail_url: `http://localhost:5000/payment/fail?transactionId=${transactionId}`,
-        cancel_url: `http://localhost:5000/payment/cancel`,
-        ipn_url: "http://localhost:5000/ipn",
+        success_url: `${process.env.BACKEND_URL}/payment/success?transactionId=${transactionId}`,
+        fail_url: `${process.env.BACKEND_URL}/payment/fail?transactionId=${transactionId}`,
+        cancel_url: `${process.env.BACKEND_URL}/payment/cancel`,
+        ipn_url: `${process.env.BACKEND_URL}/ipn`,
         product_name: productNames,
         product_category: "craft",
         product_profile: "general",
@@ -735,7 +735,7 @@ async function run() {
       const { transactionId } = req.query;
 
       if (!transactionId) {
-        return res.redirect(`https://craft-hub-1.web.app/dashboard/my-order`);
+        return res.redirect(`${process.env.FRONTEND_URL}/dashboard/my-order`);
       }
 
       const result = await ordersCollection.updateOne(
@@ -744,18 +744,18 @@ async function run() {
       );
 
       if (result.modifiedCount > 0) {
-        res.redirect(`https://craft-hub-1.web.app/dashboard/my-order`);
+        res.redirect(`${process.env.FRONTEND_URL}/dashboard/my-order`);
       }
     });
 
     app.post("/payment/fail", async (req, res) => {
       const { transactionId } = req.query;
       if (!transactionId) {
-        return res.redirect(`https://craft-hub-1.web.app/dashboard/my-order`);
+        return res.redirect(`${process.env.FRONTEND_URL}/dashboard/my-order`);
       }
       const result = await ordersCollection.deleteOne({ transactionId });
       if (result.deletedCount) {
-        res.redirect(`https://craft-hub-1.web.app/dashboard/my-order`);
+        res.redirect(`${process.env.FRONTEND_URL}/dashboard/my-order`);
       }
     });
 

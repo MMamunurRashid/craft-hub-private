@@ -19,7 +19,7 @@ const ProductSlider = () => {
   } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:5000/product-slider`);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/product-slider`);
       const data = await res.json();
       // console.log(data);
       return data;

@@ -3,38 +3,30 @@ import { useSearchContext } from "../../../Contexts/SearchContext";
 import ProductCard from "../ProductCard/ProductCard";
 import Product from "../Product/Product";
 import Loading from "../../../Shared/Loading/Loading";
-import { useNavigate } from "react-router-dom";
-import Layout from "./Layout";
 import { useQuery } from "@tanstack/react-query";
-import useSearchValue from "../../../hooks/useSearchValue";
 import { safeFetch } from "../../../utils/api";
 
 const Products = () => {
-  const { searchInput } = useSearchContext();
-  const [searchValue, handleSearchInputChange] = useSearchValue();
+  const { searchInput, clearSearch } = useSearchContext();
   const [search, setSearch] = useState("");
   const [displayLimit, setDisplayLimit] = useState(6);
-  
-  if (searchValue) {
-    setSearch(searchValue);
-  }
-  console.log(searchValue);
-  // if (searchInput) {
-  //     setSearch(searchInput);
-  // }
-  //   console.log(searchInput);
-
   const [products, setProducts] = useState([]);
-  const [loading, setIsLoading] = useState(true); 
+  const [loading, setIsLoading] = useState(true);
+
+  // Set search from searchInput context when it changes
+  useEffect(() => {
+    if (searchInput) {
+      setSearch(searchInput);
+    }
+  }, [searchInput]);
 
   const {
     data: categories = [],
-    refetch,
     isLoading,
   } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
-      return await safeFetch(`http://localhost:5000/categories`);
+      return await safeFetch(`${process.env.REACT_APP_API_URL}/categories`);
     },
   });
 
@@ -42,7 +34,16 @@ const Products = () => {
     const load = async () => {
       setIsLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/products-page?limit=${displayLimit}`);
+        let url;
+        if (search && search.trim()) {
+          // Use search endpoint when there's a search term
+          url = `${process.env.REACT_APP_API_URL}/search-products?search=${encodeURIComponent(search.toLowerCase())}`;
+        } else {
+          // Use regular products endpoint when no search term
+          url = `${process.env.REACT_APP_API_URL}/products-page?limit=${displayLimit}`;
+        }
+        
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
         console.log(data);
@@ -54,10 +55,11 @@ const Products = () => {
       }
     };
     load();
-  }, [displayLimit]);
+  }, [search, displayLimit]);
 
-  const handleCategoryProduct = (id) => {
-    setSearch(id);
+  const handleCategoryProduct = (categoryName) => {
+    setSearch(categoryName);
+    setDisplayLimit(6); // Reset display limit when changing category
   };
 
   const [getProduct, setProduct] = useState(null);
@@ -66,12 +68,11 @@ const Products = () => {
     // console.log("Click", product);
   };
   const handleSeeMore = () => {
-    // Increase the display limit when "Show More" is clicked
-    setDisplayLimit(displayLimit + 6); 
+    // Only increase display limit if not searching (search returns all results)
+    if (!search || !search.trim()) {
+      setDisplayLimit(displayLimit + 6);
+    }
   };
-  
-  
-  const navigate = useNavigate();
 
   return (
     <div className="flex">
@@ -112,9 +113,26 @@ const Products = () => {
       </div>
 
       <div className="w-5/6 mt-10">
-        <h1 className="text-center font-semibold">
-          Your Search is "{search}" and the result is below:
-        </h1>
+        <div className="text-center mb-4">
+          {search && search.trim() ? (
+            <div className="flex justify-center items-center gap-4 mb-4">
+              <h1 className="font-semibold">
+                Search results for "{search}":
+              </h1>
+              <button 
+                onClick={() => {
+                  setSearch("");
+                  clearSearch();
+                }} 
+                className="btn btn-sm btn-outline"
+              >
+                Clear Search
+              </button>
+            </div>
+          ) : (
+            <h1 className="font-semibold">All Products</h1>
+          )}
+        </div>
         {loading ? ( // Show a loader component while data is loading
           <Loading></Loading>
         ) : products?.length ? (
@@ -134,13 +152,12 @@ const Products = () => {
         )}
         {getProduct && <Product product={getProduct} />}
 
-        <div className="flex justify-center mb-5">
-          
-           
+        {/* Only show "See More" button if not searching */}
+        {(!search || !search.trim()) && products?.length >= displayLimit && (
+          <div className="flex justify-center mb-5">
             <button onClick={() => handleSeeMore()} className="btn btn-primary">See More</button>
-          
-      
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

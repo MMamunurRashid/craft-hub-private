@@ -106,7 +106,7 @@ const Register = () => {
   // save user to DB
   const saveUserInDb = (userDetails) => {
     // return the fetch promise so caller can await it
-    return fetch(`http://localhost:5000/users`, {
+    return fetch(`${process.env.REACT_APP_API_URL}/users`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -120,7 +120,7 @@ const Register = () => {
       .then((data) => {
         toast.success("User information saved in database");
         // After saving user, request JWT and save it to localStorage immediately
-        safeFetch(`http://localhost:5000/jwt?email=${userDetails.email}`)
+        safeFetch(`${process.env.REACT_APP_API_URL}/jwt?email=${userDetails.email}`)
           .then((jwtRes) => {
             if (jwtRes && jwtRes.accessToken) {
               localStorage.setItem("accessToken", jwtRes.accessToken);

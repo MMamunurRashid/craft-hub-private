@@ -8,6 +8,7 @@ import loginBenner from "../../../assets/login.jpg";
 import { AuthContext } from "../../../Contexts/AuthProvider";
 import toast from "react-hot-toast";
 import useToken from "../../../hooks/useToken";
+import { useEffect } from "react";
 
 const Login = () => {
   const { signIn } = useContext(AuthContext);
@@ -19,6 +20,8 @@ const Login = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const from = location.state?.from?.pathname || "/";
+  // console.log(location.state);
+  
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -26,9 +29,11 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  if (token) {
-    navigate(from, { replace: true });
-  }
+  useEffect(() => {
+    if (token) {
+      navigate(from, { replace: true });
+    }
+  }, [token, from, navigate]);
 
   const {
     register,

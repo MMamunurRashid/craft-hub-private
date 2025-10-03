@@ -9,7 +9,7 @@ const useToken = (email) => {
       const loadToken = async () => {
         try {
           console.log('useToken: requesting token for', email);
-          const data = await safeFetch(`http://localhost:5000/jwt?email=${email}`);
+          const data = await safeFetch(`${process.env.REACT_APP_API_URL}/jwt?email=${email}`);
           console.log('useToken: safeFetch returned', data);
           if (data && data.accessToken) {
             localStorage.setItem("accessToken", data.accessToken);
@@ -19,7 +19,7 @@ const useToken = (email) => {
           console.error('useToken: safeFetch error', err);
           // fallback: try a plain fetch and log response body for debugging
           try {
-            const res = await fetch(`http://localhost:5000/jwt?email=${email}`);
+            const res = await fetch(`${process.env.REACT_APP_API_URL}/jwt?email=${email}`);
             const text = await res.text();
             console.error('useToken: fallback fetch status', res.status, 'body:', text);
             try {

@@ -24,7 +24,7 @@ const OrderHistory = () => {
     queryKey: ["orders", user?.email],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5000/my-order?email=${user?.email}`,
+        `${process.env.REACT_APP_API_URL}/my-order?email=${user?.email}`,
         {
           headers: {
             authorization: `bearer ${localStorage.getItem("accessToken")}`,
@@ -68,7 +68,7 @@ const OrderHistory = () => {
   };
   useEffect(() => {
     if (productId) {
-      fetch(`http://localhost:5000/product/${productId}`)
+      fetch(`${process.env.REACT_APP_API_URL}/product/${productId}`)
         .then((res) => res.json())
         .then((data) => {
           setProduct(data);
@@ -99,7 +99,7 @@ const OrderHistory = () => {
       reviewTime: localTime,
     };
     //  console.log(reviewDetails);
-    fetch("http://localhost:5000/review", {
+    fetch(`${process.env.REACT_APP_API_URL}/review`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -146,7 +146,7 @@ const OrderHistory = () => {
         "Are you sure you want to Product return request for this order?"
       )
     ) {
-      fetch(`http://localhost:5000/product-return/${selectedOrder}`, {
+      fetch(`${process.env.REACT_APP_API_URL}/product-return/${selectedOrder}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

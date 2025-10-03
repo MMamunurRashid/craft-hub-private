@@ -16,7 +16,7 @@ const MyOrder = () => {
     queryKey: ["orders", user?.email],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5000/my-order?email=${user?.email}`,
+        `${process.env.REACT_APP_API_URL}/my-order?email=${user?.email}`,
         {
           headers: {
             authorization: `bearer ${localStorage.getItem("accessToken")}`,
@@ -60,7 +60,7 @@ const MyOrder = () => {
   };
   useEffect(() => {
     if (productId) {
-      fetch(`http://localhost:5000/product/${productId}`)
+      fetch(`${process.env.REACT_APP_API_URL}/product/${productId}`)
         .then((res) => res.json())
         .then((data) => {
           setProduct(data);
@@ -80,7 +80,7 @@ const MyOrder = () => {
 
   useEffect(() => {
     if (orderForInvoiceId) {
-      fetch(`http://localhost:5000/order/${orderForInvoiceId}`)
+      fetch(`${process.env.REACT_APP_API_URL}/order/${orderForInvoiceId}`)
         .then((res) => res.json())
         .then((data) => {
           console.log(data);

@@ -13,7 +13,7 @@ const AllBuyer = () => {
       } = useQuery({
         queryKey: ["buyer"],
         queryFn: async () => {
-          const res = await fetch("http://localhost:5000/buyer", {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/buyer`, {
             headers: {
               authorization: `bearer ${localStorage.getItem("accessToken")}`,
             },

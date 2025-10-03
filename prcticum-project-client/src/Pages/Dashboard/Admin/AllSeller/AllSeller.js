@@ -12,7 +12,7 @@ const AllSeller = () => {
       } = useQuery({
         queryKey: ["seller"],
         queryFn: async () => {
-          const res = await fetch("http://localhost:5000/seller", {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/seller`, {
             headers: {
               authorization: `bearer ${localStorage.getItem("accessToken")}`,
             },

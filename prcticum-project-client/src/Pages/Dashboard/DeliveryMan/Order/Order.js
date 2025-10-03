@@ -17,7 +17,7 @@ const Order = () => {
     queryKey: ["orders", user?.email],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5000/delivery-man-orders/${user?.email}`
+        `${process.env.REACT_APP_API_URL}/delivery-man-orders/${user?.email}`
       );
       const data = await res.json();
       return data;
@@ -33,7 +33,7 @@ const Order = () => {
           "Are you sure you want to Product Take by Delivery Man and way to deliver for this order?"
         )
       ) {
-        fetch(`http://localhost:5000/update-delivery-status/${orderId}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/update-delivery-status/${orderId}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -66,7 +66,7 @@ const Order = () => {
           "Are you sure you want to Complete Delivery for this order?"
         )
       ) {
-        fetch(`http://localhost:5000/update-delivery-status/${orderId}`, {
+        fetch(`${process.env.REACT_APP_API_URL}/update-delivery-status/${orderId}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -107,7 +107,7 @@ const Order = () => {
         "Are you sure you want to give a Delivery Note for this order?"
       )
     ) {
-      fetch(`http://localhost:5000/delivery-notes/${selectedOrder._id}`, {
+      fetch(`${process.env.REACT_APP_API_URL}/delivery-notes/${selectedOrder._id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +137,7 @@ const Order = () => {
     console.log(`Cash received for order ${orderId}`);
 
     if (window.confirm("Are you sure you Received The Cash for this order?")) {
-      fetch(`http://localhost:5000/update-payment-status/${orderId}`, {
+      fetch(`${process.env.REACT_APP_API_URL}/update-payment-status/${orderId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

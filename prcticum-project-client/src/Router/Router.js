@@ -61,7 +61,7 @@ const router = createBrowserRouter([
         path: "/category/:id",
         element: <ShopByCategory/>,
         loader: async ({ params }) => {
-          const res = await fetch(`http://localhost:5000/category/${params.id}`);
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/category/${params.id}`);
           if (!res.ok) throw new Error('Failed to load category');
           return res;
         },
@@ -70,7 +70,7 @@ const router = createBrowserRouter([
         path: "/product-details/:id",
         element: <ProductDetails/>,
         loader: async ({ params }) => {
-          const res = await fetch(`http://localhost:5000/product/${params.id}`);
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/product/${params.id}`);
           if (!res.ok) throw new Error('Failed to load product');
           return res;
         },
